@@ -1,0 +1,80 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '20 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+concurrency:
+  group: publish-sdk-dotnet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
+        with:
+          images: ghcr.io/containerpak/sdk-dotnet
+          tags: |
+            type=raw,value=main
+            type=sha,prefix=sha-
+      - id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: .
+          file: Containerfile
+          pull: true
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+      - name: Verify SDK
+        run: |
+          for platform in linux/amd64 linux/arm64; do
+            docker run --rm --platform "$platform" ghcr.io/containerpak/sdk-dotnet:main dotnet --info
+            docker run --rm --platform "$platform" ghcr.io/containerpak/sdk-dotnet:main sh -c \
+              'workdir=$(mktemp -d) && dotnet new console -o "$workdir" && dotnet run --project "$workdir"'
+          done
+
+      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62
+
+      - name: Install cpak-sign
+        run: |
+          curl -fsSLO https://github.com/Containerpak/cpak/releases/latest/download/cpak-sign-linux-amd64
+          install -Dm755 cpak-sign-linux-amd64 /usr/local/bin/cpak-sign
+
+      - name: Sign the package state
+        env:
+          CPAK_REGISTRY_USERNAME: ${{ github.actor }}
+          CPAK_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          repository="$(printf '%s' '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          cpak-sign state \
+            --origin "github.com/${repository}" \
+            --image "ghcr.io/${repository}:main" \
+            --generation "${{ github.run_number }}"
+          cosign sign-blob --yes --new-bundle-format=true \
+            --bundle cpak-state.sigstore.json cpak-state
+          cpak-sign attach --image "ghcr.io/${repository}"
