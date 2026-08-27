@@ -1,11 +1,13 @@
 {
-  "$schema": "https://raw.githubusercontent.com/Containerpak/cpak/v2/schema/manifest-v2.json",
-  "manifest_version": "2.0",
+  "$schema": "https://raw.githubusercontent.com/Containerpak/cpak/v2/schema/manifest-v3.json",
+  "manifest_version": "3.0",
   "name": ".NET SDK",
   "description": ".NET SDK, C# compiler and development tools.",
   "version": "9.0.317",
-  "image": "ghcr.io/containerpak/sdk-dotnet:main",
-  "binaries": ["/usr/local/bin/dotnet"],
+  "image": "ghcr.io/containerpak/sdk-dotnet@sha256:e832bdda14825134c152d996b0a4d3a6b880927fea9a3d665a5173e310b2cf35",
+  "binaries": [
+    "/usr/local/bin/dotnet"
+  ],
   "desktop_entries": [],
   "dependencies": [],
   "addons": [],
@@ -14,22 +16,21 @@
     "slot": "sdk.dotnet",
     "mode": "exclusive",
     "exports": {
-      "path": ["/usr/local/bin"],
-      "environment": ["DOTNET_ROOT=/opt/dotnet"]
+      "path": [
+        "/usr/local/bin"
+      ],
+      "environment": [
+        "DOTNET_ROOT=/opt/dotnet"
+      ]
     }
   },
   "idle_time": 0,
   "override": {
-    "socketX11": false,
     "socketWayland": false,
     "socketPulseAudio": false,
-    "socketSessionBus": false,
-    "socketSystemBus": false,
     "socketSshAgent": true,
     "socketCups": false,
     "socketGpgAgent": true,
-    "socketAtSpiBus": false,
-    "socketBluetooth": false,
     "deviceDri": false,
     "deviceKvm": false,
     "deviceShm": false,
@@ -46,7 +47,12 @@
     "openURI": false,
     "hostApplications": false,
     "filePicker": {},
-    "filesystem": [{"path": "home", "access": "read-write"}],
+    "filesystem": [
+      {
+        "path": "home",
+        "access": "read-write"
+      }
+    ],
     "network": true,
     "process": false,
     "userNamespaces": false,
