@@ -26,11 +26,13 @@
   },
   "idle_time": 0,
   "override": {
+    "displayX11": false,
     "socketWayland": false,
     "socketPulseAudio": false,
     "socketSshAgent": true,
     "socketCups": false,
     "socketGpgAgent": true,
+    "bluetooth": false,
     "deviceDri": false,
     "deviceKvm": false,
     "deviceShm": false,
