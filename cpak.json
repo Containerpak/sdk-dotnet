@@ -4,7 +4,7 @@
   "name": ".NET SDK",
   "description": ".NET SDK, C# compiler and development tools.",
   "version": "9.0.317",
-  "image": "ghcr.io/containerpak/sdk-dotnet@sha256:6455328b75c961cca05b9ef9beba32ed4877c46fa8e3fba3d67a32a7d466426f",
+  "image": "ghcr.io/containerpak/sdk-dotnet@sha256:bf5b489727bd5c2fbecbd6a01f5dded9aef3f3ef7bf52fb0eed9ca9e2218c66e",
   "binaries": [
     "/usr/local/bin/dotnet"
   ],
